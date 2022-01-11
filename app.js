@@ -19,7 +19,7 @@ app.post('/orion-slack-bot', async (req, res) => {
   const { challenge } = req.body;
 
   console.log(`Received slack event ${JSON.stringify(req.body)}`);
-  if (req.body.event.channel_id === dataPatchChannel) {
+  if (req.body.event && req.body.event.channel_id === dataPatchChannel) {
     console.log('WE IN BUSINESS BOIS');
     const fileId = req.body.event.file_id;
     console.log(fileId, cache.has(fileId));
