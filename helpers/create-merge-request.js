@@ -2,6 +2,7 @@ const AdmZip = require('adm-zip');
 const axios = require('axios');
 const createPatchFile = require('./patch-template');
 const gitlabToken = `Bearer ${process.env.GITLAB_TOKEN}`;
+const dataPatchChannel = 'C01J5DTK5L7';
 
 function parseCsvToJson(csvData) {
   const rows = csvData.trim().replace(/"/g, '').split('\n');
@@ -34,7 +35,7 @@ function editGitlabYaml(yamlData, fileName) {
   return arr.join('\n');
 }
 
-function createMergeRequest(fileInputPath) {
+async function createMergeRequest(fileInputPath) {
   console.log(fileInputPath);
   const zip = new AdmZip(fileInputPath);
   const zipEntries = zip.getEntries(); // an array of ZipEntry records
@@ -113,8 +114,27 @@ function createMergeRequest(fileInputPath) {
           title: `Patch transaction history reconciliation ${date}`,
         },
       });
-
-      console.log('Merge request created');
+      if (createMergeRequest.data) {
+        console.log('Merge request created');
+        axios({
+          method: 'POST',
+          url: 'https://slack.com/api/chat.postMessage',
+          headers: {
+            Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`,
+          },
+          data: {
+            channel: dataPatchChannel,
+            text: `New psuedo-pam Merge Request created at ${createMergeRequest.data.web_url}`,
+          },
+        })
+          .then((resp) => {
+            console.log(resp.data);
+          })
+          .catch((err) => {
+            console.log(err.response.data);
+          });
+      }
+      return null;
     }
   });
 }
