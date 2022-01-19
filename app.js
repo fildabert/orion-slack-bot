@@ -47,13 +47,14 @@ app.post('/orion-slack-bot', async (req, res) => {
         fs.mkdirSync(`${__dirname}/files`);
       }
       const path = `${__dirname}/files/${fileName}`;
-      await downloadResponse.data.pipe(fs.createWriteStream(path));
-
-      setTimeout(async () => {
-        createMergeRequest(path);
-        cache.set(fileId, 1);
-        fs.unlinkSync(path);
-      }, 500);
+      await downloadResponse.data
+        .pipe(fs.createWriteStream(path))
+        .on('finish', () => {
+          cache.set(fileId, 1);
+          createMergeRequest(path).then(() => {
+            fs.unlinkSync(path);
+          });
+        });
     }
   }
 

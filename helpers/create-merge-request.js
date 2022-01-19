@@ -49,7 +49,7 @@ async function createMergeRequest(fileInputPath) {
       const dateTime = new Date().getTime();
       const date = new Date().toISOString().split('T')[0];
       const patchFile = createPatchFile(JSON.stringify(transactionIds));
-      const fileName = `${date}-transaction-history-reconciliation.js`;
+      const fileName = `${date}-transaction-history-reconciliation-${dateTime}.js`;
 
       const gitlabYamlResponse = await axios({
         method: 'GET',
@@ -58,10 +58,7 @@ async function createMergeRequest(fileInputPath) {
           Authorization: gitlabToken,
         },
       });
-      const gitlabYamlFile = editGitlabYaml(
-        gitlabYamlResponse.data,
-        `${fileName}-${dateTime}`
-      );
+      const gitlabYamlFile = editGitlabYaml(gitlabYamlResponse.data, fileName);
 
       const branchName = `feature/orion-automation-${dateTime}`;
       const createBranch = await axios({
@@ -75,7 +72,7 @@ async function createMergeRequest(fileInputPath) {
       const commitPatchFile = await axios({
         method: 'POST',
         url: `https://gitlab.com/api/v4/projects/27702188/repository/files/${encodeURIComponent(
-          `src/queries/query-transaction-history/${fileName}-${dateTime}`
+          `src/queries/query-transaction-history/${fileName}`
         )}`,
         headers: {
           Authorization: gitlabToken,
