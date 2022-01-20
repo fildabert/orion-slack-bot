@@ -31,9 +31,15 @@ app.post('/orion-slack-bot', async (req, res) => {
           Authorization,
         },
       });
-
-      const downloadUrl = fileInfoResponse.data.file.url_private_download;
-      const fileName = fileInfoResponse.data.file.name;
+      let downloadUrl;
+      let fileName;
+      if (fileInfoResponse.data.file.attachments) {
+        downloadUrl = fileInfoResponse.data.file.attachments[0].url;
+        fileName = fileInfoResponse.data.file.attachments[0].filename;
+      } else {
+        downloadUrl = fileInfoResponse.data.file.url_private_download;
+        fileName = fileInfoResponse.data.file.name;
+      }
 
       const downloadResponse = await axios({
         method: 'GET',
