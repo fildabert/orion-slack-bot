@@ -40,6 +40,10 @@ app.post('/orion-slack-bot', async (req, res) => {
         downloadUrl = fileInfoResponse.data.file.url_private_download;
         fileName = fileInfoResponse.data.file.name;
       }
+      const transactionReconciliationRegex = /transaction_reconciliation/i;
+      if (!transactionReconciliationRegex.test(fileName)) {
+        return res.status(200).json({ challenge });
+      }
 
       const downloadResponse = await axios({
         method: 'GET',

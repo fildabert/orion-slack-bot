@@ -22,16 +22,27 @@ function parseCsvToJson(csvData) {
 
 function editGitlabYaml(yamlData, fileName) {
   const arr = yamlData.split('\n');
-  let lastFoundIndex = 0;
+  let lastFoundIndex = -1;
+  let scriptLineAt = -1;
   for (let i = 0; i < arr.length; i++) {
-    const regex = /#/;
+    const regex = /# - node/;
+    const scriptRegex = /[ \t]script:/;
     if (regex.test(arr[i])) {
       lastFoundIndex = i;
     }
+    if (scriptRegex.test(arr[i])) {
+      scriptLineAt = i;
+    }
   }
-  arr[lastFoundIndex + 1] = `    # - ${arr[lastFoundIndex + 1].slice(6)}`;
-  const newScript = `    - node src/queries/query-transaction-history/${fileName}`;
-  arr.splice(lastFoundIndex + 2, 0, newScript);
+  if (lastFoundIndex === -1) {
+    arr[
+      scriptLineAt + 1
+    ] = `    - node src/queries/query-transaction-history/${fileName}`;
+  } else {
+    arr[lastFoundIndex + 1] = `    # - ${arr[lastFoundIndex + 1].slice(6)}`;
+    const newScript = `    - node src/queries/query-transaction-history/${fileName}`;
+    arr.splice(lastFoundIndex + 2, 0, newScript);
+  }
   return arr.join('\n');
 }
 
